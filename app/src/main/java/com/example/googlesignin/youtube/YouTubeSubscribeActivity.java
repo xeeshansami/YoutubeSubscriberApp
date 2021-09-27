@@ -1,23 +1,30 @@
 package com.example.googlesignin.youtube;
 
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.example.googlesignin.R;
 import com.example.googlesignin.SignIn;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
@@ -38,7 +45,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.example.googlesignin.R.id.playerView;
 
-public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTubePlayer.OnInitializedListener,EasyPermissions.PermissionCallbacks, YouTubeActivityView {
+public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTubePlayer.OnInitializedListener, EasyPermissions.PermissionCallbacks, YouTubeActivityView, GoogleApiClient.OnConnectionFailedListener {
     // if you are using YouTubePlayerView in xml then activity must extend YouTubeBaseActivity
 
     private static final int RECOVERY_DIALOG_REQUEST = 1;
@@ -57,7 +64,7 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
     private YouTubeActivityPresenter presenter;
     private int counter = 0;
     private String emailId = "";
-
+    private GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +77,13 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
         // initialize presenter
         presenter = new YouTubeActivityPresenter(YouTubeSubscribeActivity.this,YouTubeSubscribeActivity.this);
 
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
         emailId = getIntent().getExtras().getString(SignIn.USER_EMAIL);
         YouTubePlayerSupportFragment supportFragment = (YouTubePlayerSupportFragment) getSupportFragmentManager().findFragmentById(R.id.playerView);
         supportFragment.initialize(youtubeKey,this); // paste your youtube key
@@ -291,9 +305,17 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
         if (pDialog != null && pDialog.isShowing()) {
             pDialog.dismiss();
         }
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(@NonNull Status status) {
+                       finish();
+                    }
+                });
         Toast.makeText(YouTubeSubscribeActivity.this, "Successfully subscribe to "+title, Toast.LENGTH_SHORT).show();
     }
 
+    @SuppressLint("WrongConstant")
     @Override // responce from presenter on failure
     public void onSubscribetionFail(Subscription subscription) {
 
@@ -320,7 +342,30 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
         {
             Toast.makeText(this, "You have already subscribe this channel, please unsubscribe this channel and try again", 5000).show();
         }
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
 
+        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        if (opr.isDone()) {
+            // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
+            // and the GoogleSignInResult will be available instantly.
+            GoogleSignInResult result = opr.get();
+//            handleSignInResult(result);
+        } else {
+            // If the user has not previously signed in on this device or the sign-in has expired,
+            // this asynchronous branch will attempt to sign in the user silently.  Cross-device
+            // single sign-on will occur in this branch.
+            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                @Override
+                public void onResult(GoogleSignInResult googleSignInResult) {
+                }
+            });
+        }
+    }
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 }

@@ -71,7 +71,6 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener {
             // Signed in successfully, show authenticated UI.
 //            updateUI(account);
             startActivity(new Intent(this, YouTubeSubscribeActivity.class).putExtra(USER_EMAIL,account.getEmail()));
-            finish();
             Toast.makeText(this, account.getDisplayName()+"\n"+account.getEmail(), Toast.LENGTH_SHORT).show();
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
