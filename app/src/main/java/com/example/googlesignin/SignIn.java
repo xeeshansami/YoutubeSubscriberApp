@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.googlesignin.youtube.YouTubeSubscribeActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -17,6 +18,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
 public class SignIn extends AppCompatActivity implements View.OnClickListener {
+    public static final String USER_EMAIL ="userEmailId" ;
     private static final int RC_SIGN_IN = 0;
     private static final String TAG = "Error";
     SignInButton signInButton;
@@ -68,6 +70,8 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener {
 
             // Signed in successfully, show authenticated UI.
 //            updateUI(account);
+            startActivity(new Intent(this, YouTubeSubscribeActivity.class).putExtra(USER_EMAIL,account.getEmail()));
+            finish();
             Toast.makeText(this, account.getDisplayName()+"\n"+account.getEmail(), Toast.LENGTH_SHORT).show();
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
