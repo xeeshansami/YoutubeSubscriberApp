@@ -1,5 +1,7 @@
 package com.example.googlesignin.youtube;
 
+import com.google.api.services.youtube.model.Subscription;
+
 /**
  * Created by admin on 16-Oct-17.
  */
@@ -7,6 +9,6 @@ package com.example.googlesignin.youtube;
 public interface YouTubeActivityView {
     void onSubscribetionSuccess(String title);
 
-    void onSubscribetionFail();
+    void onSubscribetionFail(Subscription subscription);
 
 }

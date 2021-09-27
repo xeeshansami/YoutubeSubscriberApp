@@ -18,7 +18,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
@@ -26,6 +25,9 @@ import com.google.android.youtube.player.YouTubePlayerView;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.youtube.YouTubeScopes;
+import com.google.api.services.youtube.model.Subscription;
+
+import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
@@ -293,7 +295,7 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
     }
 
     @Override // responce from presenter on failure
-    public void onSubscribetionFail() {
+    public void onSubscribetionFail(Subscription subscription) {
 
         if (pDialog != null && pDialog.isShowing()) {
             pDialog.dismiss();
@@ -316,9 +318,7 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
         }
         else
         {
-            Toast.makeText(this, "goto following link and enable the youtube api access\n" +
-                    "https://console.developers.google.com/apis/api/youtube.googleapis.com/overview?project=YOUR_PROJECT_ID",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "You have already subscribe this channel, please unsubscribe this channel and try again", 5000).show();
         }
 
 

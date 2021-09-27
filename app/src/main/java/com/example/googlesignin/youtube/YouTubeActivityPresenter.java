@@ -92,7 +92,7 @@ class YouTubeActivityPresenter {
             if (subscription != null) {
                 view.onSubscribetionSuccess(subscription.getSnippet().getTitle());
             } else {
-                view.onSubscribetionFail();
+                view.onSubscribetionFail(subscription);
             }
         }
     }
