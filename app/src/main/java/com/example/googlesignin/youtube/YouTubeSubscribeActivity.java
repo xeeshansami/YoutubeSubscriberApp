@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.googlesignin.R;
@@ -58,7 +59,7 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
 
     private static final String PREF_ACCOUNT_NAME = "accountName";;
     private String youtubeKey = "AIzaSyBYp2fvnGB3uHsYFUHq7WjFH5Qgt8CWRn0";// paste your youtube key here
-
+    EditText channelID;
     private GoogleAccountCredential mCredential;
     private ProgressDialog pDialog;
     private YouTubeActivityPresenter presenter;
@@ -76,7 +77,7 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
 //        }
         // initialize presenter
         presenter = new YouTubeActivityPresenter(YouTubeSubscribeActivity.this,YouTubeSubscribeActivity.this);
-
+        channelID=findViewById(R.id.channelID);
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -99,12 +100,16 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
               /*              FIRST GOTO FOLLOWING LINK AND ENABLE THE YOUTUBE API ACCESS
                 https://console.developers.google.com/apis/api/youtube.googleapis.com/overview?project=YOUR_PROJECT_ID**/
 
-                SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString(PREF_ACCOUNT_NAME, emailId);
-                editor.apply();
+                if(!channelID.getText().toString().trim().isEmpty()) {
+                    SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString(PREF_ACCOUNT_NAME, emailId);
+                    editor.apply();
 
-                getResultsFromApi();
+                    getResultsFromApi();
+                }else{
+                    Toast.makeText(YouTubeSubscribeActivity.this, "Please enter your youtube channel id", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -155,9 +160,11 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
         {
             pDialog = new ProgressDialog(YouTubeSubscribeActivity.this);
             pDialog.setMessage("Please wait...");
-            pDialog.show();
+            if(!pDialog.isShowing()){
+                pDialog.show();
+            }
             // handing subscribe task by presenter
-            presenter.subscribeToYouTubeChannel(mCredential,"UClC3eTBBCHM1_0vfi5oji6g"); // pass youtube channelId as second parameter
+            presenter.subscribeToYouTubeChannel(mCredential,channelID.getText().toString().trim()); // pass youtube channelId as second parameter
         }
 
     }
@@ -180,7 +187,9 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
                     YouTubeSubscribeActivity.this,  // showing dialog to user for getting google play service
                     connectionStatusCode,
                     REQUEST_GOOGLE_PLAY_SERVICES);
-            dialog.show();
+            if(!dialog.isShowing()) {
+                dialog.show();
+            }
         }
     }
 
@@ -302,9 +311,9 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
 
     @Override  // responce from presenter on success
     public void onSubscribetionSuccess(String title) {
-        if (pDialog != null && pDialog.isShowing()) {
+//        if (pDialog != null && pDialog.isShowing()) {
             pDialog.dismiss();
-        }
+//        }
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
@@ -319,9 +328,9 @@ public class YouTubeSubscribeActivity extends AppCompatActivity implements YouTu
     @Override // responce from presenter on failure
     public void onSubscribetionFail(Subscription subscription) {
 
-        if (pDialog != null && pDialog.isShowing()) {
+//        if (pDialog != null && pDialog.isShowing()) {
             pDialog.dismiss();
-        }
+//        }
         // user don't have youtube channel subscribe permission so grant it form him
         // as we have not taken at the time of sign in
         if(counter < 3)
